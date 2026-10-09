@@ -58,7 +58,7 @@ TurretModule.InitializeTurret = function(TurretSpawner: BasePart)
     table.insert(TurretObjects, TurretObj)
 end
 
-TurretModule.SpawnTurret = function(TurretPart: BasePart, Target: BasePart, TravelTime: number) -- this is broken for some reason
+TurretModule.SpawnTurret = function(TurretPart: BasePart, Target: BasePart, TravelTime: number)
     task.spawn(function() -- wrapped in a task.spawn because for some reason before it would delete clones if multiple existed
         TurretSound:Play()
 
@@ -70,15 +70,14 @@ TurretModule.SpawnTurret = function(TurretPart: BasePart, Target: BasePart, Trav
         NewTurret.Parent = TurretPart.Parent
 
         local Attachment: Attachment = NewTurret:WaitForChild("Attachment")
-        local AlignPosition = Attachment:WaitForChild("AlignPosition") -- VS code doesn't like me type checking this :C
+        local AlignPosition = Attachment:WaitForChild("AlignPosition")
         AlignPosition.Position = NewTurret.Position
 
         local NewTweenInfo = TweenInfo.new(TravelTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
         local NewTween = TweenService:Create(AlignPosition, NewTweenInfo, {Position = Target.Position})
         NewTween:Play()
-        NewTween.Completed:Connect(function()
-            NewTurret:Destroy()
-        end)
+        NewTween.Completed:Wait()
+        NewTurret:Destroy()
     end)
 end
 
