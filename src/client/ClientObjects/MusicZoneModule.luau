@@ -10,7 +10,6 @@ local MusicGUI = PlayerGUI:WaitForChild("MusicGUI")
 local TextLabel: TextLabel = MusicGUI:WaitForChild("TextLabel")
 
 local CurrentZone: BasePart? = nil
-local ActiveTweens = {}
 
 
 local MusicZoneModule = {}
@@ -39,13 +38,9 @@ MusicZoneModule.ChangeMusic = function(Part: BasePart)
 
     MusicZoneModule.CurrentSong = Sound
 
-    for _, Tween: Tween in ipairs(ActiveTweens) do
-        Tween:Cancel()
-    end
-    table.clear(ActiveTweens)
-
     if not Sound.IsPlaying then
         Sound.TimePosition = 0
+        Sound.Volume = 0
         Sound:Play()
     end
 
@@ -55,7 +50,6 @@ MusicZoneModule.ChangeMusic = function(Part: BasePart)
     local NewTweenInfo = TweenInfo.new(NewTweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
     local FadeInTween = TweenService:Create(Sound, NewTweenInfo, {Volume = TargetVolume})
     
-    table.insert(ActiveTweens, FadeInTween)
     FadeInTween:Play()
 end
 
@@ -68,27 +62,19 @@ MusicZoneModule.ExitedZone = function(Part: BasePart)
     local OriginalSound = Part:FindFirstChildOfClass("Sound")
     local Sound: Sound = SoundService:WaitForChild(OriginalSound.Name)
 
-    for _, Tween: Tween in ipairs(ActiveTweens) do
-        Tween:Cancel()
-    end
-    table.clear(ActiveTweens)
-
     local TweenTime = Part:GetAttribute("TweenTime") or 1
 
     local NewTweenInfo = TweenInfo.new(TweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
     local FadeOutTween = TweenService:Create(Sound, NewTweenInfo, {Volume = 0})
     
-    table.insert(ActiveTweens, FadeOutTween)
     FadeOutTween:Play()
 
-    FadeOutTween.Completed:Connect(function(PlaybackState)
-        if PlaybackState == Enum.PlaybackState.Completed then
-            Sound:Stop()
-            if MusicZoneModule.CurrentSong == Sound then
-                MusicZoneModule.CurrentSong = nil
-            end
-        end
-    end)
+    FadeOutTween.Completed:Wait()
+    
+    Sound:Stop()
+    if MusicZoneModule.CurrentSong == Sound then
+        MusicZoneModule.CurrentSong = nil
+    end
 end
 
 MusicZoneModule.LoadMusic = function(Sound: Sound)
