@@ -38,19 +38,13 @@ MusicZoneModule.ChangeMusic = function(Part: BasePart)
 
     MusicZoneModule.CurrentSong = Sound
 
-    if not Sound.IsPlaying then
-        Sound.TimePosition = 0
-        Sound.Volume = 0
-        Sound:Play()
-    end
-
     local TargetVolume = Part:GetAttribute("Volume") or OriginalSound.Volume or 1
     local NewTweenTime = Part:GetAttribute("TweenTime") or 1
 
     local NewTweenInfo = TweenInfo.new(NewTweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
     local FadeInTween = TweenService:Create(Sound, NewTweenInfo, {Volume = TargetVolume})
-    
     FadeInTween:Play()
+    Sound:Resume()
 end
 
 MusicZoneModule.ExitedZone = function(Part: BasePart)
@@ -70,9 +64,9 @@ MusicZoneModule.ExitedZone = function(Part: BasePart)
     FadeOutTween:Play()
 
     FadeOutTween.Completed:Wait()
-    
-    Sound:Stop()
-    if MusicZoneModule.CurrentSong == Sound then
+    if MusicZoneModule.CurrentSong ~= Sound then
+        Sound:Stop()
+        Sound.Volume = 0
         MusicZoneModule.CurrentSong = nil
     end
 end
