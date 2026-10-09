@@ -15,7 +15,7 @@ local CurrentZone: BasePart? = nil
 local MusicZoneModule = {}
 MusicZoneModule.CurrentSong = nil :: Sound?
 
-MusicZoneModule.ChangeMusic = function(Part: BasePart)
+function MusicZoneModule.ChangeMusic(Part: BasePart)
     if Part == CurrentZone then return end
     CurrentZone = Part
 
@@ -47,7 +47,7 @@ MusicZoneModule.ChangeMusic = function(Part: BasePart)
     Sound:Resume()
 end
 
-MusicZoneModule.ExitedZone = function(Part: BasePart)
+function MusicZoneModule.ExitedZone(Part: BasePart)
     if CurrentZone ~= Part then return end
     CurrentZone = nil
 
@@ -67,11 +67,10 @@ MusicZoneModule.ExitedZone = function(Part: BasePart)
     if MusicZoneModule.CurrentSong ~= Sound then
         Sound:Stop()
         Sound.Volume = 0
-        MusicZoneModule.CurrentSong = nil
     end
 end
 
-MusicZoneModule.LoadMusic = function(Sound: Sound)
+function MusicZoneModule.LoadMusic(Sound: Sound)
     if not SoundService:FindFirstChild(Sound.Name) then
         local Clone = Sound:Clone()
         Clone.Parent = SoundService
