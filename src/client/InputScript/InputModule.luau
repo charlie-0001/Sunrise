@@ -6,7 +6,7 @@ InputModule.Type = "Heartbeat"
 InputModule.HeldInputs = {}
 InputModule.PreviousHeldInputs = {}
 
-InputModule.IsHoldingAny = function(InputList: {})
+function InputModule.IsHoldingAny(InputList: {})
     for _, Input in ipairs(InputList) do
         if InputModule.HeldInputs[Input] then
             return true
@@ -15,7 +15,7 @@ InputModule.IsHoldingAny = function(InputList: {})
     return false
 end
 
-InputModule.Pressed = function(InputList: {})
+function InputModule.Pressed(InputList: {})
     for _, Input in ipairs(InputList) do
         local IsHeldNow = InputModule.HeldInputs[Input]
         local WasHeldLastFrame = InputModule.PreviousHeldInputs[Input]
@@ -27,15 +27,15 @@ InputModule.Pressed = function(InputList: {})
     return false
 end 
 
-InputModule.AddInput = function(Input)
+function InputModule.AddInput(Input)
     InputModule.HeldInputs[Input] = true
 end
 
-InputModule.RemoveInput = function(Input)
+function InputModule.RemoveInput(Input)
     InputModule.HeldInputs[Input] = nil
 end
 
-InputModule.Run = function()
+function InputModule.Run(DeltaTime)
     table.clear(InputModule.PreviousHeldInputs)
     for Key, Value in pairs(InputModule.HeldInputs) do
         InputModule.PreviousHeldInputs[Key] = Value

@@ -6,7 +6,7 @@ StatsModule = {}
 StatsModule.Interval = 0.1
 StatsModule.Type = "Heartbeat"
 
-StatsModule.Run = function(DeltaTime)
+function StatsModule.Run(DeltaTime)
     print("Instance count is: " .. Stats.InstanceCount)
     print("Frame time is: " .. Stats.FrameTime)
     print("GPU frame time is: " .. Stats.RenderGPUFrameTime)
