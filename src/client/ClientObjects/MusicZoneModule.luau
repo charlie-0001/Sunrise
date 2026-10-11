@@ -38,6 +38,10 @@ function MusicZoneModule.ChangeMusic(Part: BasePart)
 
     MusicZoneModule.CurrentSong = Sound
 
+    if not Sound.IsPlaying then
+        Sound.Volume = 0
+    end
+
     local TargetVolume = Part:GetAttribute("Volume") or OriginalSound.Volume or 1
     local NewTweenTime = Part:GetAttribute("TweenTime") or 1
 
