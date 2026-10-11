@@ -7,7 +7,9 @@ local PulseObjects = {}
 local CurrentTransparency = {}
 
 local AverageLoudness = 0
-local SmoothingFactor = 0.005
+local SmoothingFactor = 0.2
+
+local LastSong = nil
 
 
 MusicPulsePart = {}
@@ -16,13 +18,19 @@ MusicPulsePart.Interval = 0.05
 MusicPulsePart.Type = "RenderStepped"
 
 MusicPulsePart.Run = function(DeltaTime: number)
-    local PlaybackLoudness
-    if MusicZoneModule.CurrentSong then
-        PlaybackLoudness = MusicZoneModule.CurrentSong.PlaybackLoudness
-    else return end
+    local CurrentSong = MusicZoneModule.CurrentSong
+    if not CurrentSong then return end
+
+    if CurrentSong ~= LastSong then
+        LastSong = CurrentSong
+        AverageLoudness = 0
+    end
+
+    local PlaybackLoudness = CurrentSong.PlaybackLoudness
+    if PlaybackLoudness <= 0 then return end
 
     -- move the average loudness only at the start of the song. hopefully this makes the drop of songs more intense. 
-    if MusicZoneModule.CurrentSong.TimePosition <= 15 then
+    if MusicZoneModule.CurrentSong.TimePosition <= 15 and MusicZoneModule.CurrentSong.PlaybackLoudness > 0 then
         if AverageLoudness == 0 then
             AverageLoudness = PlaybackLoudness
         else
@@ -42,6 +50,8 @@ MusicPulsePart.Run = function(DeltaTime: number)
 end
 
 MusicPulsePart.Pulse = function(Instance, PlaybackLoudness: number)
+    if AverageLoudness <= 0 then return end 
+
     local Ratio = PlaybackLoudness / AverageLoudness
     local TargetTransparency = 0.75 - ((Ratio - 1) * 0.2)
     TargetTransparency = math.clamp(TargetTransparency, 0, 0.9)
