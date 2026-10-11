@@ -25,6 +25,12 @@ NoclipTool.Equipped:Connect(function()
     HumanoidStateModule.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
     HumanoidStateModule.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
 
+    for _, BasePart: BasePart in HumanoidStateModule.Character:GetChildren() do
+        if BasePart:IsA("BasePart") then
+            BasePart.CollisionGroup = "CollideWithNothing"
+        end
+    end
+
     ProcessModule.InsertProcess(NoclipProcess)
     NoclipModule.BindKeys()
 end)
@@ -33,8 +39,13 @@ NoclipTool.Unequipped:Connect(function()
     HumanoidStateModule.HumanoidRootPart.Anchored = false
     HumanoidStateModule.Inert = false
 
-    HumanoidStateModule.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- removes possibility of ragdolling from noclip
+    for _, BasePart: BasePart in HumanoidStateModule.Character:GetChildren() do
+        if BasePart:IsA("BasePart") then
+            BasePart.CollisionGroup = "Players"
+        end
+    end
 
     ProcessModule.RemoveProcess(NoclipProcess)
     NoclipModule.UnbindKeys()
+    HumanoidStateModule.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- removes possibility of ragdolling from noclip
 end)
