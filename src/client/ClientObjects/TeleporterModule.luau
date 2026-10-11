@@ -39,7 +39,7 @@ function CurveTeleporterModule.CurveTeleport(Part: BasePart, Humanoid: Humanoid)
 
     local StartUpTime = Model:GetAttribute("StartUpTime") or 0
     if StartUpTime > 0 then
-        HumanoidStateModule.Character:PivotTo(CFrame.lookAlong(HumanoidStateModule.HumanoidRootPart.Position, Part.CFrame.LookVector))
+        HumanoidStateModule.Character:PivotTo(CFrame.lookAlong(FindPointOnCurve(0, StartPoint.Position, ControlPoint, EndPoint.Position)))
         task.wait(StartUpTime)
     end
 
