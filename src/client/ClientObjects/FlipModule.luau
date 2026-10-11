@@ -1,5 +1,6 @@
 -- load services
 local CollectionServce = game:GetService("CollectionService")
+local SoundService = game:GetService("SoundService")
 
 
 -- load modules
@@ -7,6 +8,7 @@ local InputModule = require(script.Parent.Parent:WaitForChild("InputScript"):Wai
 local HumanoidStateModule = require(script.Parent.Parent:WaitForChild("IntervalCheck"):WaitForChild("HumanoidStateModule"))
 
 
+local FlipSound: Sound = SoundService:WaitForChild("FlipSound")
 local GhostCharacter: BasePart
 
 local function GetOppositePosition(Model: Model, ObjectForLocalSpace: BasePart)
@@ -47,7 +49,9 @@ FlipModule.Update = function(Part: BasePart)
         GhostCharacter.Position = OppositePosition
     end
 
+    -- FLIP
     if InputModule.Pressed(FlipModule.Keybinds) then
+        FlipSound:Play()
         HumanoidStateModule.Character:PivotTo(CFrame.new(OppositePosition))
     end
 end
