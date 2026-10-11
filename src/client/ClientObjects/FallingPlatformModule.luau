@@ -9,7 +9,7 @@ local Sound: Sound = SoundService:FindFirstChild("FallingPlatformSound")
 
 FallingPlatformModule = {}
 
-FallingPlatformModule.Fall = function(Part: BasePart)
+function FallingPlatformModule.Fall(Part: BasePart)
     if CollectionService:HasTag(Part, "On") then return end
 
     local Model = Part.Parent :: Model
@@ -28,20 +28,15 @@ FallingPlatformModule.Fall = function(Part: BasePart)
     -- pulse
     local Pulse = Part:GetAttribute("Pulse")
     if Pulse then
-        local PulseTweenInfo = TweenInfo.new(
-            0.15, 
-            Enum.EasingStyle.Quad, 
-            Enum.EasingDirection.Out, 
-            0, -- repeat count
-            true -- reverses tween when done
-        )
+        local PulseTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
         local OriginalColor = Part.Color
         local h, s, v = OriginalColor:ToHSV()
-        
-        local PulseColor = Color3.fromHSV(h, s, math.min(1, v * 1.5))
+        local PulseColor = Color3.fromHSV(h, math.min(0, s - 0.1), v)
 
-        local PulseTween = TweenService:Create(Part, PulseTweenInfo, {Color = PulseColor})
+        local PulseTween = TweenService:Create(Part, PulseTweenInfo, {Color = OriginalColor})
+
+        Part.Color = PulseColor
         PulseTween:Play()
     end
 
@@ -64,6 +59,10 @@ FallingPlatformModule.Fall = function(Part: BasePart)
         Part.Transparency = 0.75
     end
 
+    -- stall
+    local StallTime = Part:GetAttribute("Stall") or 0
+    if StallTime > 0 then task.wait(StallTime) end
+
     -- make part return
     local ReturnTime = Part:GetAttribute("ReturnTime") or 1
     local ReturnTweenInfo = TweenInfo.new(ReturnTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
@@ -84,31 +83,32 @@ FallingPlatformModule.Fall = function(Part: BasePart)
     CollectionService:RemoveTag(Part, "On")
 end
 
-FallingPlatformModule.InitializePart = function(Part: BasePart)
+function FallingPlatformModule.InitializePart(Part: BasePart)
     local Atc = Part:FindFirstChildOfClass("Attachment") :: Attachment
     if not Atc then return end
-
-    if not Part:FindFirstChildOfClass("AlignPosition") then
-        local AlignPos: AlignPosition = Instance.new("AlignPosition")
-
-        AlignPos.Mode = Enum.PositionAlignmentMode.OneAttachment
-        AlignPos.Attachment0 = Atc
-        AlignPos.MaxForce = math.huge
-        AlignPos.MaxVelocity = math.huge
-        AlignPos.Responsiveness = 100
-        AlignPos.Position = Part.Position
-        AlignPos.Parent = Part
-    end
 
     if not Part:FindFirstChildOfClass("AlignOrientation") then
         local AlignOri: AlignOrientation = Instance.new("AlignOrientation")
 
+        AlignOri.CFrame = Atc.WorldCFrame
         AlignOri.Mode = Enum.OrientationAlignmentMode.OneAttachment
         AlignOri.Attachment0 = Atc
         AlignOri.MaxAngularVelocity = math.huge
         AlignOri.MaxTorque = math.huge
         AlignOri.Responsiveness = 100
         AlignOri.Parent = Part
+    end
+
+    if not Part:FindFirstChildOfClass("AlignPosition") then
+        local AlignPos: AlignPosition = Instance.new("AlignPosition")
+
+        AlignPos.Position = Atc.WorldCFrame.Position
+        AlignPos.Mode = Enum.PositionAlignmentMode.OneAttachment
+        AlignPos.Attachment0 = Atc
+        AlignPos.MaxForce = math.huge
+        AlignPos.MaxVelocity = math.huge
+        AlignPos.Responsiveness = 100
+        AlignPos.Parent = Part
     end
 
     Part.Anchored = false
