@@ -18,19 +18,21 @@ MusicPulsePart.Interval = 0.05
 MusicPulsePart.Type = "RenderStepped"
 
 MusicPulsePart.Run = function(DeltaTime: number)
-    local CurrentSong = MusicZoneModule.CurrentSong
-    if not CurrentSong then return end
+    if not MusicZoneModule.CurrentSong then return end
 
-    if CurrentSong ~= LastSong then
-        LastSong = CurrentSong
+    if MusicZoneModule.CurrentSong ~= LastSong then
+        LastSong = MusicZoneModule.CurrentSong
         AverageLoudness = 0
     end
 
-    local PlaybackLoudness = CurrentSong.PlaybackLoudness
+    local PlaybackLoudness = MusicZoneModule.CurrentSong.PlaybackLoudness
     if PlaybackLoudness <= 0 then return end
 
+    local DropPosition = MusicZoneModule.CurrentZone:GetAttribute("DropPosition") or MusicZoneModule.CurrentSong.TimeLength
+    if DropPosition == 0 then DropPosition = MusicZoneModule.CurrentSong.TimeLength end
+
     -- move the average loudness only at the start of the song. hopefully this makes the drop of songs more intense. 
-    if MusicZoneModule.CurrentSong.TimePosition <= 15 and MusicZoneModule.CurrentSong.PlaybackLoudness > 0 then
+    if MusicZoneModule.CurrentSong.TimePosition <= DropPosition and MusicZoneModule.CurrentSong.PlaybackLoudness > 0 then
         if AverageLoudness == 0 then
             AverageLoudness = PlaybackLoudness
         else
@@ -53,7 +55,7 @@ MusicPulsePart.Pulse = function(Instance, PlaybackLoudness: number)
     if AverageLoudness <= 0 then return end 
 
     local Ratio = PlaybackLoudness / AverageLoudness
-    local TargetTransparency = 0.75 - ((Ratio - 1) * 0.2)
+    local TargetTransparency = 0.8 - ((Ratio - 1) * 0.2)
     TargetTransparency = math.clamp(TargetTransparency, 0, 0.9)
 
     local Current = CurrentTransparency[Instance] or Instance.Transparency or Instance.ImageTransparency
