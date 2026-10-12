@@ -9,14 +9,15 @@ local PlayerGUI = Players.LocalPlayer:WaitForChild("PlayerGui")
 local MusicGUI = PlayerGUI:WaitForChild("MusicGUI")
 local TextLabel: TextLabel = MusicGUI:WaitForChild("TextLabel")
 
-local CurrentZone: BasePart? = nil
-
 
 local MusicZoneModule = {}
+
 MusicZoneModule.CurrentSong = nil :: Sound?
+MusicZoneModule.CurrentZone = nil :: BasePart?
+
 
 function MusicZoneModule.ChangeMusic(Part: BasePart)
-    if Part == CurrentZone then return end
+    if Part == MusicZoneModule.CurrentZone then return end
     CurrentZone = Part
 
     local OriginalSound = Part:FindFirstChildOfClass("Sound")
