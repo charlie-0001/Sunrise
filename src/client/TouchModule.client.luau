@@ -8,6 +8,7 @@ local FlipModule = require(script.Parent:WaitForChild("ClientObjects"):WaitForCh
 local FallingPartModule = require(script.Parent:WaitForChild("ClientObjects"):WaitForChild("FallingPlatformModule"))
 local BasicLauncherModule = require(script.Parent:WaitForChild("ClientObjects"):WaitForChild("BasicLauncherModule"))
 local TeleporterModule = require(script.Parent:WaitForChild("ClientObjects"):WaitForChild("TeleporterModule"))
+local CustomBackgroundModule = require(script.Parent:WaitForChild("ClientObjects"):WaitForChild("CustomBackgroundModule"))
 
 
 -- custom touch event
@@ -27,7 +28,9 @@ local TouchActions = {
     ["DepthOfFieldChanger"] = function(Part) LightingModule.ChangeDepthOfField(Part) end,
     ["MusicZone"] = function(Part) MusicZoneModule.ChangeMusic(Part) end,
     ["Flip"] = function(Part) FlipModule.Update(Part) end,
-    ["FallingPart"] = function(Part) FallingPartModule.Fall(Part) end
+    ["FallingPart"] = function(Part) FallingPartModule.Fall(Part) end,
+    ["CustomBackgroundGiver"] = function(Part) CustomBackgroundModule.BackgroundGiverTouched(Part) end,
+    ["CustomBackgroundRemover"] = function(Part) CustomBackgroundModule.BackgroundRemoverTouched(Part) end
 }
 
 local TouchEndedActions = {
