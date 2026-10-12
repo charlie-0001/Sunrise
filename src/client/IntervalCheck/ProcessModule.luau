@@ -4,7 +4,7 @@ local Process = {}
 Process.RenderSteppedProcesses = {} :: {Process}
 Process.HeartbeatProcesses = {} :: {Process}
 
--- process object
+-- Process object
 Process.__index = Process
 
 export type Process = typeof(setmetatable({} :: {
@@ -26,19 +26,25 @@ function Process.new(Interval: number, Run: (DeltaTime: number?) -> (), Type: st
 end
 
 -- useful functions for processes
-Process.InsertProcess = function(Process: Process)
-    if Process.Type == "Heartbeat" then
-        table.insert(Process.HeartbeatProcesses, Process)
-    elseif Process.Type == "RenderStepped" then
-        table.insert(Process.RenderSteppedProcesses, Process)
+Process.InsertProcess = function(Proc: Process)
+    if Proc.Type == "Heartbeat" then
+        table.insert(Process.HeartbeatProcesses, Proc)
+    elseif Proc.Type == "RenderStepped" then
+        table.insert(Process.RenderSteppedProcesses, Proc)
     end
 end
 
-Process.RemoveProcess = function(Process: Process)
-    if Process.Type == "Heartbeat" then
-        table.remove(Process.HeartbeatProcesses, table.find(Process.HeartbeatProcesses, Process))
-    elseif Process.Type == "RenderStepped" then
-        table.remove(Process.RenderSteppedProcesses, table.find(Process.RenderSteppedProcesses, Process))
+Process.RemoveProcess = function(Proc: Process)
+    if Proc.Type == "Heartbeat" then
+        local index = table.find(Process.HeartbeatProcesses, Proc)
+        if index then
+            table.remove(Process.HeartbeatProcesses, index)
+        end
+    elseif Proc.Type == "RenderStepped" then
+        local index = table.find(Process.RenderSteppedProcesses, Proc)
+        if index then
+            table.remove(Process.RenderSteppedProcesses, index)
+        end
     end
 end
 
