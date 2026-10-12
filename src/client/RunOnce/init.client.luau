@@ -1,5 +1,6 @@
 -- load services
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 
 
 -- load modules
@@ -49,4 +50,32 @@ for TagName, Action in pairs(InitializeActions) do
         if Instance:HasTag("Initialize") then return end
         task.spawn(Action, Instance)
     end)
+end
+
+
+-- more modules
+local NoclipModule = require(script.Parent:WaitForChild("Gears"):WaitForChild("NoclipModule"))
+local GodmodeModule = require(script.Parent:WaitForChild("Gears"):WaitForChild("GodmodeModule"))
+
+
+-- handles code for when character dies / spawns
+local function OnCharacterAdded(Character: Model)
+    local Player = Players.LocalPlayer
+    local Humanoid = Character:WaitForChild("Humanoid") :: Humanoid
+
+    NoclipModule.GiveTool(Player, Character)
+    GodmodeModule.GiveTool(Player, Character)
+
+    Humanoid.Died:Connect(function()
+        NoclipModule.Reset(Player, Character)
+        GodmodeModule.Reset(Player, Character)
+
+        MusicZoneModule.CurrentSong = nil
+    end)
+end
+
+Players.LocalPlayer.CharacterAdded:Connect(OnCharacterAdded)
+
+if Players.LocalPlayer.Character then
+    task.spawn(OnCharacterAdded, Players.LocalPlayer.Character)
 end
