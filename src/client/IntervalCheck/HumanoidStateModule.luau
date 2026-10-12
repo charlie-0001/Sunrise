@@ -1,18 +1,19 @@
+-- load services
 local Player = game:GetService("Players").LocalPlayer
 
 
 HumanoidState = {}
 
 HumanoidState.Interval = 0
-HumanoidState.Type = "Renderstepped"
+HumanoidState.Type = "RenderStepped"
 
-HumanoidState.Character = Player.Character or Player.CharacterAdded:Wait() :: Model
-HumanoidState.Humanoid = HumanoidState.Character:WaitForChild("Humanoid") :: Humanoid
-HumanoidState.HumanoidRootPart = HumanoidState.Character:WaitForChild("HumanoidRootPart") :: BasePart
-HumanoidState.Inert = false
+HumanoidState.Character = nil :: Model?
+HumanoidState.Humanoid = nil  :: Humanoid?
+HumanoidState.HumanoidRootPart = nil :: BasePart?
+HumanoidState.Inert = false :: boolean
 
 HumanoidState.Run = function()
-    local Character = Player.Character or Player.CharacterAdded:Wait()
+    local Character = Player.Character
     if not Character then return end
     HumanoidState.Character = Character
 
@@ -23,10 +24,6 @@ HumanoidState.Run = function()
     local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
     if not HumanoidRootPart then return end
     HumanoidState.HumanoidRootPart = HumanoidRootPart
-
-    local Head: BasePart = Character:FindFirstChild("Head")
-    if not Head then return end
-    Head.CanCollide = true -- prevents head collision glitch
 end
 
 return HumanoidState
