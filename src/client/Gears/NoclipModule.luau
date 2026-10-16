@@ -40,8 +40,8 @@ function NoclipModule.Run(DeltaTime: number)
     if InputModule.IsHoldingAny(NoclipModule.Right) then MoveVector += Vector3.new(1, 0, 0); Count += 1 end
 	if InputModule.IsHoldingAny(NoclipModule.Up) then MoveVector += Vector3.new(0, 1, 0) end
 
-    if InputModule.IsHoldingAny(NoclipModule.SpeedUp) then NoclipModule.Speed += 5 end
-    if InputModule.IsHoldingAny(NoclipModule.SpeedDown) then NoclipModule.Speed -= 5 end
+    if InputModule.Pressed(NoclipModule.SpeedUp) then NoclipModule.Speed += 5 end
+    if InputModule.Pressed(NoclipModule.SpeedDown) then NoclipModule.Speed -= 5 end
     if NoclipModule.Speed < 0 then NoclipModule.Speed = 5 end
 
     MoveVector = MoveVector * NoclipModule.Speed * DeltaTime
