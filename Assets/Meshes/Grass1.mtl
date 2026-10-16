@@ -1,0 +1,16 @@
+newmtl Grass11Mtl
+Material Color
+Ka 1 0.932277 0
+Kd 1 0.932277 0
+Ks 0.0627451 0.0584958 0 
+
+d 1
+
+Ns 0
+
+map_Ka Grass11_diff.png
+map_Kd Grass11_diff.png
+map_d Grass11_diff.png
+
+map_Bump Grass11_nmap.png
+
