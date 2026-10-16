@@ -69,8 +69,6 @@ local function OnCharacterAdded(Character: Model)
     Humanoid.Died:Connect(function()
         NoclipModule.Reset(Player, Character)
         GodmodeModule.Reset(Player, Character)
-
-        MusicZoneModule.CurrentSong = nil
     end)
 end
 
