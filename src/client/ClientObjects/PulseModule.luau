@@ -19,6 +19,7 @@ MusicPulsePart.Type = "RenderStepped"
 
 MusicPulsePart.Run = function(DeltaTime: number)
     if not MusicZoneModule.CurrentSong then return end
+    if not MusicZoneModule.CurrentZone then return end
 
     if MusicZoneModule.CurrentSong ~= LastSong then
         LastSong = MusicZoneModule.CurrentSong
@@ -55,7 +56,7 @@ MusicPulsePart.Pulse = function(Instance, PlaybackLoudness: number)
     if AverageLoudness <= 0 then return end 
 
     local Ratio = PlaybackLoudness / AverageLoudness
-    local TargetTransparency = 0.8 - ((Ratio - 1) * 0.2)
+    local TargetTransparency = 0.8 - ((Ratio - 1) * 0.3)
     TargetTransparency = math.clamp(TargetTransparency, 0, 0.9)
 
     local Current = CurrentTransparency[Instance] or Instance.Transparency or Instance.ImageTransparency
