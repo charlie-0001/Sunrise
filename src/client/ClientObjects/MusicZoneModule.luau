@@ -18,7 +18,7 @@ MusicZoneModule.CurrentZone = nil :: BasePart?
 
 function MusicZoneModule.ChangeMusic(Part: BasePart)
     if Part == MusicZoneModule.CurrentZone then return end
-    CurrentZone = Part
+    MusicZoneModule.CurrentZone = Part
 
     local OriginalSound = Part:FindFirstChildOfClass("Sound")
     if not OriginalSound then return end
@@ -53,8 +53,8 @@ function MusicZoneModule.ChangeMusic(Part: BasePart)
 end
 
 function MusicZoneModule.ExitedZone(Part: BasePart)
-    if CurrentZone ~= Part then return end
-    CurrentZone = nil
+    if MusicZoneModule.CurrentZone ~= Part then return end
+    MusicZoneModule.CurrentZone = nil
 
     TextLabel.Text = "Nil ♪"
 
