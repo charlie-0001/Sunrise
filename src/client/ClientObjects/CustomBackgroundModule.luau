@@ -1,3 +1,7 @@
+-- load services
+local TweenService = game:GetService("TweenService")
+
+
 -- load modules
 local ProcessModule = require(script.Parent.Parent:WaitForChild("IntervalCheck"):WaitForChild("ProcessModule"))
 
@@ -9,6 +13,8 @@ CustomBackgroundModule = {}
 
 CustomBackgroundModule.Interval = 0
 CustomBackgroundModule.Type = "RenderStepped"
+
+CustomBackgroundModule.InTween = false
 
 function CustomBackgroundModule.Run(DeltaTime: number)
     local Camera: Camera = game.Workspace.CurrentCamera
@@ -73,6 +79,41 @@ function CustomBackgroundModule.BackgroundRemoverTouched(Part: BasePart)
     -- disable the process running if there are no current backgrounds
     if #CurrentBackgrounds == 0 then
         ProcessModule.RemoveProcess(CustomBackgroundModule.BackgroundProcess)
+    end
+end
+
+function CustomBackgroundModule.ChangeBackgroundProperties(Part: BasePart)
+    if Part:HasTag("Cooldown") then return end
+    Part:AddTag("Cooldown")
+
+    local Folder = Part.Parent :: Folder
+    local Clone: BasePart = Folder:FindFirstChild("Clone")
+    if not Clone then return end
+
+    local WillTween = Part:GetAttribute("Tween") or false
+    local TargetTransparency = Part:GetAttribute("Transparency") or 0
+    local TargetColor = Part:GetAttribute("Color") or Color3.new(255, 255, 255)
+
+    if WillTween == true then
+        CustomBackgroundModule.InTween = true
+        print(CustomBackgroundModule.InTween)
+
+        local TweenTime = Part:GetAttribute("TweenTime") or 1
+        local TweenInfo = TweenInfo.new(TweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+        local TransparencyTween = TweenService:Create(Clone, TweenInfo, {Transparency = TargetTransparency})
+        local ColorTween = TweenService:Create(Clone, TweenInfo, {Color = TargetColor})
+        TransparencyTween:Play()
+        ColorTween:Play()
+
+        ColorTween.Completed:Wait()
+        CustomBackgroundModule.InTween = false
+
+        Part:RemoveTag("Cooldown")
+    else
+        Clone.Color = TargetColor
+        Clone.Transparency = TargetTransparency
+        Part:RemoveTag("Cooldown")
     end
 end
 

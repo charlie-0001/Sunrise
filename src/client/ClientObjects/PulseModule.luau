@@ -1,6 +1,7 @@
 -- import modules
 local MusicZoneModule = require(script.Parent:WaitForChild("MusicZoneModule"))
 local DistanceCheckModule = require(script.Parent.Parent:WaitForChild("DistanceCheckModule"))
+local CustomBackgroundModule = require(script.Parent:WaitForChild("CustomBackgroundModule"))
 
 
 local PulseObjects = {}
@@ -42,6 +43,9 @@ MusicPulsePart.Run = function(DeltaTime: number)
         end
     end
 
+    print(CustomBackgroundModule.InTween)
+    if CustomBackgroundModule.InTween == true then return end
+
     for _, Instance: Instance in ipairs(PulseObjects) do
         local DistanceCheck = Instance:GetAttribute("DistanceCheck")
         if DistanceCheck == true then 
@@ -56,7 +60,7 @@ MusicPulsePart.Pulse = function(Instance, PlaybackLoudness: number)
     if AverageLoudness <= 0 then return end 
 
     local Ratio = PlaybackLoudness / AverageLoudness
-    local TargetTransparency = 0.8 - ((Ratio - 1) * 0.3)
+    local TargetTransparency = 0.8 - ((Ratio - 1) * 0.35)
     TargetTransparency = math.clamp(TargetTransparency, 0, 0.9)
 
     local Current = CurrentTransparency[Instance] or Instance.Transparency or Instance.ImageTransparency

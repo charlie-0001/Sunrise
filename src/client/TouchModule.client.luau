@@ -30,7 +30,8 @@ local TouchActions = {
     ["Flip"] = function(Part) FlipModule.Update(Part) end,
     ["FallingPart"] = function(Part) FallingPartModule.Fall(Part) end,
     ["CustomBackgroundGiver"] = function(Part) CustomBackgroundModule.BackgroundGiverTouched(Part) end,
-    ["CustomBackgroundRemover"] = function(Part) CustomBackgroundModule.BackgroundRemoverTouched(Part) end
+    ["CustomBackgroundRemover"] = function(Part) CustomBackgroundModule.BackgroundRemoverTouched(Part) end,
+    ["CustomBackgroundPropertyChanger"] = function(Part) CustomBackgroundModule.ChangeBackgroundProperties(Part) end
 }
 
 local TouchEndedActions = {
