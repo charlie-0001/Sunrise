@@ -96,7 +96,6 @@ function CustomBackgroundModule.ChangeBackgroundProperties(Part: BasePart)
 
     if WillTween == true then
         CustomBackgroundModule.InTween = true
-        print(CustomBackgroundModule.InTween)
 
         local TweenTime = Part:GetAttribute("TweenTime") or 1
         local TweenInfo = TweenInfo.new(TweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
