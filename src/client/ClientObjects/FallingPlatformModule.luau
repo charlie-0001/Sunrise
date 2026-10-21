@@ -26,7 +26,7 @@ function FallingPlatformModule.Fall(Part: BasePart)
     CollectionService:AddTag(Part, "On")
 
     -- pulse
-    local Pulse = Part:GetAttribute("Pulse")
+    local Pulse = Model:GetAttribute("Pulse")
     if Pulse then
         local PulseTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
@@ -45,7 +45,7 @@ function FallingPlatformModule.Fall(Part: BasePart)
     end
 
     -- make part fall
-    local FallTime = Part:GetAttribute("FallTime") or 1
+    local FallTime = Model:GetAttribute("FallTime") or 1
     local FallTweenInfo = TweenInfo.new(FallTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
     local FallTween = TweenService:Create(AlignPos, FallTweenInfo, {Position = End.Position})
@@ -53,18 +53,18 @@ function FallingPlatformModule.Fall(Part: BasePart)
     FallTween.Completed:Wait()
 
     -- remove collision
-    local RemoveCollision = Part:GetAttribute("RemoveCollision")
+    local RemoveCollision = Model:GetAttribute("RemoveCollision")
     if RemoveCollision then 
         Part.CanCollide = false 
         Part.Transparency = 0.75
     end
 
     -- stall
-    local StallTime = Part:GetAttribute("Stall") or 0
+    local StallTime = Model:GetAttribute("Stall") or 0
     if StallTime > 0 then task.wait(StallTime) end
 
     -- make part return
-    local ReturnTime = Part:GetAttribute("ReturnTime") or 1
+    local ReturnTime = Model:GetAttribute("ReturnTime") or 1
     local ReturnTweenInfo = TweenInfo.new(ReturnTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 
     local ReturnTween = TweenService:Create(AlignPos, ReturnTweenInfo, {Position = StartPos})
@@ -77,7 +77,7 @@ function FallingPlatformModule.Fall(Part: BasePart)
         Part.Transparency = 0
     end
 
-    local Cooldown = Part:GetAttribute("Cooldown") or 0.1
+    local Cooldown = Model:GetAttribute("Cooldown") or 0.1
     task.wait(Cooldown)
 
     CollectionService:RemoveTag(Part, "On")
