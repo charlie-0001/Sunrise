@@ -4,75 +4,109 @@ local SoundService = game:GetService("SoundService")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
 
+-- load modules
+local CollisionCheckModule = require(script.Parent.Parent:WaitForChild("IntervalCheck"):WaitForChild("CollisionCheckModule"))
 
 local PlayerGUI = Players.LocalPlayer:WaitForChild("PlayerGui")
 local MusicGUI = PlayerGUI:WaitForChild("MusicGUI")
 local TextLabel: TextLabel = MusicGUI:WaitForChild("TextLabel")
-
 
 local MusicZoneModule = {}
 
 MusicZoneModule.CurrentSong = nil :: Sound?
 MusicZoneModule.CurrentZone = nil :: BasePart?
 
+local function GetBestZone(Excluding: BasePart?)
+    local HighestPriority = -math.huge
+    local BestPart = nil
 
-function MusicZoneModule.ChangeMusic(Part: BasePart)
-    if Part == MusicZoneModule.CurrentZone then return end
-    MusicZoneModule.CurrentZone = Part
+    for _, ZonePart: BasePart in pairs(CollisionCheckModule.PartsInPlayer) do
+        if ZonePart:HasTag("MusicZone") and ZonePart ~= Excluding then
+            local Priority = ZonePart:GetAttribute("Priority") or 0
+            if Priority > HighestPriority then
+                BestPart, HighestPriority = ZonePart, Priority
+            end
+        end
+    end
 
-    local OriginalSound = Part:FindFirstChildOfClass("Sound")
-    if not OriginalSound then return end
+    return BestPart
+end
 
-    local Sound: Sound = SoundService:FindFirstChild(OriginalSound.Name)
+local function FadeOut(Zone: BasePart)
+    local Original = Zone:FindFirstChildOfClass("Sound")
+    if not Original then return end
+    local Sound = SoundService:FindFirstChild(Original.Name) :: Sound?
     if not Sound then return end
 
-    local StringID = string.match(Sound.SoundId, "%d+")
-    local AssetID = tonumber(StringID)
+    local TweenTime = Zone:GetAttribute("TweenTime") or 1
+    local Info = TweenInfo.new(TweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+    local Tween = TweenService:Create(Sound, Info, {Volume = 0})
 
-    local Success, MarketSound = pcall(function(...)
-        return MarketplaceService:GetProductInfoAsync(AssetID)
+    Tween.Completed:Once(function(state)
+        -- only stop if it fully faded and nothing re-selected it
+        if state == Enum.PlaybackState.Completed and MusicZoneModule.CurrentSong ~= Sound then
+            Sound:Stop()
+        end
     end)
+    Tween:Play()
+end
 
-    if Success then
-        TextLabel.Text = MarketSound.Name .. " ♪"
-    end 
+local function FadeIn(Zone: BasePart)
+    local Original = Zone:FindFirstChildOfClass("Sound")
+    if not Original then return end
+    local Sound = SoundService:FindFirstChild(Original.Name) :: Sound?
+    if not Sound then 
+        MusicZoneModule.CurrentSong = nil
+        return 
+    end
 
     MusicZoneModule.CurrentSong = Sound
 
-    if not Sound.IsPlaying then
-        Sound.Volume = 0
+    local AssetID = tonumber(string.match(Sound.SoundId, "%d+"))
+    if AssetID then
+        local Success, MarketSound = pcall(function(...)
+            return MarketplaceService:GetProductInfoAsync(AssetID)
+        end)
+
+        if Success and MarketSound then
+            TextLabel.Text = MarketSound.Name .. " ♪"
+        end 
     end
 
-    local TargetVolume = Part:GetAttribute("Volume") or OriginalSound.Volume or 1
-    local NewTweenTime = Part:GetAttribute("TweenTime") or 1
+    if not Sound.IsPlaying then
+        Sound.Volume = 0
+        Sound:Play()
+    end
 
-    local NewTweenInfo = TweenInfo.new(NewTweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-    local FadeInTween = TweenService:Create(Sound, NewTweenInfo, {Volume = TargetVolume})
-    FadeInTween:Play()
-    Sound:Resume()
+    local TargetVolume = Zone:GetAttribute("Volume") or 1
+    local TweenTime = Zone:GetAttribute("TweenTime") or 1
+    local Info = TweenInfo.new(TweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+    TweenService:Create(Sound, Info, {Volume = TargetVolume}):Play()
+end
+
+function MusicZoneModule.Refresh(Excluding: BasePart?)
+    local Target = GetBestZone(Excluding)
+    local Old = MusicZoneModule.CurrentZone
+    if Target == Old then return end
+
+    MusicZoneModule.CurrentZone = Target
+
+    if Target then
+        FadeIn(Target)
+    else
+        MusicZoneModule.CurrentSong = nil
+        TextLabel.Text = "Nil ♪"
+    end
+
+    if Old then FadeOut(Old) end
+end
+
+function MusicZoneModule.ChangeMusic(Part: BasePart)
+    MusicZoneModule.Refresh()
 end
 
 function MusicZoneModule.ExitedZone(Part: BasePart)
-    if MusicZoneModule.CurrentZone ~= Part then return end
-    MusicZoneModule.CurrentZone = nil
-
-    TextLabel.Text = "Nil ♪"
-
-    local OriginalSound = Part:FindFirstChildOfClass("Sound")
-    local Sound: Sound = SoundService:WaitForChild(OriginalSound.Name)
-
-    local TweenTime = Part:GetAttribute("TweenTime") or 1
-
-    local NewTweenInfo = TweenInfo.new(TweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-    local FadeOutTween = TweenService:Create(Sound, NewTweenInfo, {Volume = 0})
-    
-    FadeOutTween:Play()
-
-    FadeOutTween.Completed:Wait()
-    if MusicZoneModule.CurrentSong ~= Sound then
-        Sound:Stop()
-        Sound.Volume = 0
-    end
+    MusicZoneModule.Refresh(Part)
 end
 
 function MusicZoneModule.LoadMusic(Sound: Sound)
