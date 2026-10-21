@@ -1,13 +1,25 @@
 -- load services
 local TweenService = game:GetService("TweenService")
-local SoundService = game:GetService("SoundService")
 
 
 -- load modules
 local DistanceCheckModule = require(script.Parent.Parent:WaitForChild("DistanceCheckModule"))
 
 
-local TurretSound: Sound = SoundService:WaitForChild("TurretFireSound")
+local AlignPosToClone: AlignPosition = Instance.new("AlignPosition")
+AlignPosToClone.Mode = Enum.PositionAlignmentMode.OneAttachment
+AlignPosToClone.MaxForce = math.huge
+AlignPosToClone.MaxVelocity = math.huge
+AlignPosToClone.ApplyAtCenterOfMass = true
+AlignPosToClone.Responsiveness = 100
+
+local AlignOriToClone: AlignOrientation = Instance.new("AlignOrientation")
+AlignOriToClone.Mode = Enum.OrientationAlignmentMode.OneAttachment
+AlignOriToClone.MaxAngularVelocity = math.huge
+AlignOriToClone.MaxTorque = math.huge
+AlignOriToClone.Responsiveness = 100
+
+
 local TurretObjects = {} :: {Turret}
 
 local Turret = {}
@@ -20,10 +32,11 @@ export type Turret = typeof(setmetatable({} :: {
     Target: BasePart,
     TravelTime: number,
     Attachment: Attachment,
+    SpawnSound: Sound,
     LastRun: number
 }, Turret))
 
-function Turret.new(Interval: number, TurretPart: BasePart, TurretSpawner: BasePart, Target: BasePart, TravelTime: number, Attachment: Attachment): Turret
+function Turret.new(Interval: number, TurretPart: BasePart, TurretSpawner: BasePart, Target: BasePart, TravelTime: number, Attachment: Attachment, SpawnSound: Sound): Turret
     local self = setmetatable({} :: any, Turret)
 
     self.Interval = Interval
@@ -32,6 +45,7 @@ function Turret.new(Interval: number, TurretPart: BasePart, TurretSpawner: BaseP
     self.Target = Target
     self.TravelTime = TravelTime
     self.Attachment = Attachment
+    self.SpawnSound = SpawnSound
 
     self.LastRun = 0
 
@@ -46,35 +60,48 @@ TurretModule.Interval = 0
 TurretModule.Type = "RenderStepped"
 
 TurretModule.InitializeTurret = function(TurretSpawner: BasePart)
+    local SpawnSound = TurretSpawner:WaitForChild("SpawnSound")
     local Model = TurretSpawner:FindFirstAncestor("TurretGroup")
     local TurretPart = Model:WaitForChild("TurretPart")
-    local Attachment = TurretPart:WaitForChild("Attachment")
+    local Attachment: Attachment = TurretPart:WaitForChild("Attachment")
     local Target = Model:WaitForChild("Target")
 
-    local Interval = TurretSpawner:GetAttribute("Interval") or 1
-    local TravelTime = TurretSpawner:GetAttribute("TravelTime") or 5
+    local AlignPos: AlignPosition = AlignPosToClone:Clone()
+    AlignPos.Parent = Attachment
+    AlignPos.Attachment0 = Attachment
+    AlignPos.Position = Attachment.WorldPosition
 
-    local TurretObj = Turret.new(Interval, TurretPart, TurretSpawner, Target, TravelTime, Attachment)
+    local AlignOri: AlignOrientation = AlignOriToClone:Clone()
+    AlignOri.CFrame = TurretPart.CFrame
+    AlignOri.Parent = Attachment
+    AlignOri.Attachment0 = Attachment
+
+    local Interval = Model:GetAttribute("Interval") or 1
+    local TravelTime = Model:GetAttribute("TravelTime") or 5
+
+    local TurretObj = Turret.new(Interval, TurretPart, TurretSpawner, Target, TravelTime, Attachment, SpawnSound)
     table.insert(TurretObjects, TurretObj)
 end
 
-TurretModule.SpawnTurret = function(TurretPart: BasePart, Target: BasePart, TravelTime: number)
+TurretModule.SpawnTurret = function(Turret: Turret)
     task.spawn(function() -- wrapped in a task.spawn because for some reason before it would delete clones if multiple existed
-        TurretSound:Play()
+        Turret.SpawnSound:Play()
 
-        local NewTurret = TurretPart:Clone()
+        local NewTurret = Turret.TurretPart:Clone()
         NewTurret:RemoveTag("StudioOnly")
+        NewTurret.Anchored = false
+        NewTurret.Position = Turret.TurretSpawner.Position
         NewTurret.CollisionGroup = "OnlyCollideWithPlayers"
         NewTurret.Transparency = 0
         NewTurret.CanCollide = true
-        NewTurret.Parent = TurretPart.Parent
+        NewTurret.Parent = Turret.TurretPart.Parent
 
         local Attachment: Attachment = NewTurret:WaitForChild("Attachment")
         local AlignPosition = Attachment:WaitForChild("AlignPosition")
         AlignPosition.Position = NewTurret.Position
 
-        local NewTweenInfo = TweenInfo.new(TravelTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-        local NewTween = TweenService:Create(AlignPosition, NewTweenInfo, {Position = Target.Position})
+        local NewTweenInfo = TweenInfo.new(Turret.TravelTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+        local NewTween = TweenService:Create(AlignPosition, NewTweenInfo, {Position = Turret.Target.Position})
         NewTween:Play()
         NewTween.Completed:Wait()
         NewTurret:Destroy()
@@ -88,7 +115,7 @@ TurretModule.Run = function(DeltaTime: number)
 
         Turret.LastRun += DeltaTime
         if Turret.LastRun >= Turret.Interval then
-            TurretModule.SpawnTurret(Turret.TurretPart, Turret.Target, Turret.TravelTime, Turret.Attachment)
+            TurretModule.SpawnTurret(Turret)
             Turret.LastRun = 0
         end
     end
