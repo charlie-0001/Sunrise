@@ -43,7 +43,6 @@ MusicPulsePart.Run = function(DeltaTime: number)
         end
     end
 
-    print(CustomBackgroundModule.InTween)
     if CustomBackgroundModule.InTween == true then return end
 
     for _, Instance: Instance in ipairs(PulseObjects) do
