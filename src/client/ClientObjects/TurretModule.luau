@@ -1,4 +1,5 @@
 -- load services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 
@@ -46,7 +47,6 @@ function Turret.new(Interval: number, TurretPart: BasePart, TurretSpawner: BaseP
     self.TravelTime = TravelTime
     self.Attachment = Attachment
     self.SpawnSound = SpawnSound
-
     self.LastRun = 0
 
     return self
@@ -63,8 +63,13 @@ TurretModule.InitializeTurret = function(TurretSpawner: BasePart)
     local SpawnSound = TurretSpawner:WaitForChild("SpawnSound")
     local Model = TurretSpawner:FindFirstAncestor("TurretGroup")
     local TurretPart = Model:WaitForChild("TurretPart")
-    local Attachment: Attachment = TurretPart:WaitForChild("Attachment")
     local Target = Model:WaitForChild("Target")
+    local Attachment: Attachment = TurretPart:WaitForChild("Attachment")
+    
+    local Interval = Model:GetAttribute("Interval") or 1
+    local TravelTime = Model:GetAttribute("TravelTime") or 5
+
+    TurretPart.Parent = ReplicatedStorage:FindFirstChild("TurretParts")
 
     local AlignPos: AlignPosition = AlignPosToClone:Clone()
     AlignPos.Parent = Attachment
@@ -76,9 +81,6 @@ TurretModule.InitializeTurret = function(TurretSpawner: BasePart)
     AlignOri.Parent = Attachment
     AlignOri.Attachment0 = Attachment
 
-    local Interval = Model:GetAttribute("Interval") or 1
-    local TravelTime = Model:GetAttribute("TravelTime") or 5
-
     local TurretObj = Turret.new(Interval, TurretPart, TurretSpawner, Target, TravelTime, Attachment, SpawnSound)
     table.insert(TurretObjects, TurretObj)
 end
@@ -87,14 +89,12 @@ TurretModule.SpawnTurret = function(Turret: Turret)
     task.spawn(function() -- wrapped in a task.spawn because for some reason before it would delete clones if multiple existed
         Turret.SpawnSound:Play()
 
+        local Model = Turret.Target.Parent :: Model
         local NewTurret = Turret.TurretPart:Clone()
-        NewTurret:RemoveTag("StudioOnly")
         NewTurret.Anchored = false
         NewTurret.Position = Turret.TurretSpawner.Position
         NewTurret.CollisionGroup = "OnlyCollideWithPlayers"
-        NewTurret.Transparency = 0
-        NewTurret.CanCollide = true
-        NewTurret.Parent = Turret.TurretPart.Parent
+        NewTurret.Parent = Model
 
         local Attachment: Attachment = NewTurret:WaitForChild("Attachment")
         local AlignPosition = Attachment:WaitForChild("AlignPosition")
