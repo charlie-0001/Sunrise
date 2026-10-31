@@ -31,12 +31,13 @@ local TouchActions = {
     ["FallingPart"] = function(Part) FallingPartModule.Fall(Part) end,
     ["CustomBackgroundGiver"] = function(Part) CustomBackgroundModule.BackgroundGiverTouched(Part) end,
     ["CustomBackgroundRemover"] = function(Part) CustomBackgroundModule.BackgroundRemoverTouched(Part) end,
-    ["CustomBackgroundPropertyChanger"] = function(Part) CustomBackgroundModule.ChangeBackgroundProperties(Part) end
+    ["CustomBackgroundPropertyChanger"] = function(Part) CustomBackgroundModule.BackgroundPropertyChangerTouched(Part) end
 }
 
 local TouchEndedActions = {
     ["MusicZone"] = function(Part) MusicZoneModule.ExitedZone(Part) end,
-    ["Flip"] = function(Part) FlipModule.DestroyGhostCharacter(Part) end
+    ["Flip"] = function(Part) FlipModule.DestroyGhostCharacter(Part) end,
+    ["CustomBackgroundPropertyChanger"] = function(Part) CustomBackgroundModule.BackgroundPropertyChangerTouchEnded(Part) end
 }
 
 CustomTouchEvent.Event:Connect(function()

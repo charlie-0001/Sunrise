@@ -82,8 +82,10 @@ function CustomBackgroundModule.BackgroundRemoverTouched(Part: BasePart)
     end
 end
 
-function CustomBackgroundModule.ChangeBackgroundProperties(Part: BasePart)
+function CustomBackgroundModule.BackgroundPropertyChangerTouched(Part: BasePart)
     if Part:HasTag("Cooldown") then return end
+    if Part:HasTag("In") then return end
+    Part:AddTag("In")
     Part:AddTag("Cooldown")
 
     local Folder = Part.Parent :: Folder
@@ -114,6 +116,10 @@ function CustomBackgroundModule.ChangeBackgroundProperties(Part: BasePart)
         Clone.Transparency = TargetTransparency
         Part:RemoveTag("Cooldown")
     end
+end
+
+function CustomBackgroundModule.BackgroundPropertyChangerTouchEnded(Part: BasePart)
+    if Part:HasTag("In") then Part:RemoveTag("In") end
 end
 
 return CustomBackgroundModule
