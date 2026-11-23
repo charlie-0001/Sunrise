@@ -7,6 +7,7 @@ local ProcessModule = require(script.Parent.Parent:WaitForChild("IntervalCheck")
 
 
 local CurrentBackgrounds = {} :: {BasePart}
+local CurrentPropertyChanger = nil
 
 
 CustomBackgroundModule = {}
@@ -83,8 +84,8 @@ function CustomBackgroundModule.BackgroundRemoverTouched(Part: BasePart)
 end
 
 function CustomBackgroundModule.BackgroundPropertyChangerTouched(Part: BasePart)
-    if Part:HasTag("In") then return end
-    Part:AddTag("In")
+    if CurrentPropertyChanger then return end
+    CurrentPropertyChanger = Part
 
     local Folder = Part.Parent :: Folder
     local Clone: BasePart = Folder:FindFirstChild("Clone")
@@ -114,7 +115,8 @@ function CustomBackgroundModule.BackgroundPropertyChangerTouched(Part: BasePart)
 end
 
 function CustomBackgroundModule.BackgroundPropertyChangerTouchEnded(Part: BasePart)
-    if Part:HasTag("In") then Part:RemoveTag("In") end
+    if CustomBackgroundModule.InTween then return end
+    if CurrentPropertyChanger then CurrentPropertyChanger = nil end
 end
 
 return CustomBackgroundModule
