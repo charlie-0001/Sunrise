@@ -7,41 +7,30 @@ local CustomBackgroundModule = require(script.Parent:WaitForChild("CustomBackgro
 local PulseObjects = {}
 local CurrentTransparency = {}
 
-local AverageLoudness = 0
-local SmoothingFactor = 0.2
+local MaxTransparency = 0.85 -- resting transparency when quiet
+local MinTransparency = 0.25  -- lowest transparency (strongest pulse) on loud hits
 
 local LastSong = nil
 
 
-MusicPulsePart = {}
+PulseModule = {}
 
-MusicPulsePart.Interval = 0.05
-MusicPulsePart.Type = "RenderStepped"
+PulseModule.Interval = 0.05
+PulseModule.Type = "RenderStepped"
 
-MusicPulsePart.Run = function(DeltaTime: number)
+PulseModule.MaxLoudness = 600
+PulseModule.CurrentTransparency = 0
+
+PulseModule.Run = function(DeltaTime: number)
     if not MusicZoneModule.CurrentSong then return end
     if not MusicZoneModule.CurrentZone then return end
 
     if MusicZoneModule.CurrentSong ~= LastSong then
         LastSong = MusicZoneModule.CurrentSong
-        AverageLoudness = 0
     end
 
     local PlaybackLoudness = MusicZoneModule.CurrentSong.PlaybackLoudness
     if PlaybackLoudness <= 0 then return end
-
-    local DropPosition = MusicZoneModule.CurrentZone:GetAttribute("DropPosition") or MusicZoneModule.CurrentSong.TimeLength
-    if DropPosition == 0 then DropPosition = MusicZoneModule.CurrentSong.TimeLength end
-
-    -- move the average loudness only at the start of the song. hopefully this makes the drop of songs more intense. 
-    if MusicZoneModule.CurrentSong.TimePosition <= DropPosition and MusicZoneModule.CurrentSong.PlaybackLoudness > 0 then
-        if AverageLoudness == 0 then
-            AverageLoudness = PlaybackLoudness
-        else
-            -- exponential moving average formula
-            AverageLoudness = AverageLoudness + (PlaybackLoudness - AverageLoudness) * SmoothingFactor
-        end
-    end
 
     if CustomBackgroundModule.InTween == true then return end
 
@@ -51,31 +40,39 @@ MusicPulsePart.Run = function(DeltaTime: number)
             local DistanceCheckLength = Instance:GetAttribute("DistanceCheckLength") or 150
             if not DistanceCheckModule.DistanceCheck(Instance, DistanceCheckLength) then continue end
         end
-        MusicPulsePart.Pulse(Instance, PlaybackLoudness)
+        PulseModule.Pulse(Instance, PlaybackLoudness)
     end
 end
 
-MusicPulsePart.Pulse = function(Instance, PlaybackLoudness: number)
-    if AverageLoudness <= 0 then return end 
+PulseModule.Pulse = function(Instance, PlaybackLoudness: number)
+    local Intensity = math.clamp(PlaybackLoudness / PulseModule.MaxLoudness, 0, 1)
+	local TargetTransparency = MaxTransparency - (Intensity * (MaxTransparency - MinTransparency))
+	TargetTransparency = math.clamp(TargetTransparency, MinTransparency, 0.85)
 
-    local Ratio = PlaybackLoudness / AverageLoudness
-    local TargetTransparency = 0.8 - ((Ratio - 1) * 0.35)
-    TargetTransparency = math.clamp(TargetTransparency, 0, 0.9)
+	local Current = CurrentTransparency[Instance]
+	if Current == nil then
+		if Instance:IsA("BasePart") then
+			Current = Instance.Transparency
+		elseif Instance:IsA("ImageLabel") then
+			Current = Instance.ImageTransparency
+		else
+			return
+		end
+	end
 
-    local Current = CurrentTransparency[Instance] or Instance.Transparency or Instance.ImageTransparency
-    local NewTransparency = Current + (TargetTransparency - Current) * 0.25
+	local NewTransparency = Current + (TargetTransparency - Current) * 0.5
+	PulseModule.CurrentTransparency = NewTransparency
+	CurrentTransparency[Instance] = NewTransparency
 
-    if Instance:IsA("BasePart") then
-        CurrentTransparency[Instance] = NewTransparency
-        Instance.Transparency = NewTransparency
-    elseif Instance:IsA("ImageLabel") then
-        CurrentTransparency[Instance] = NewTransparency
-        Instance.ImageTransparency = NewTransparency
-    end
+	if Instance:IsA("BasePart") then
+		Instance.Transparency = NewTransparency
+	elseif Instance:IsA("ImageLabel") then
+		Instance.ImageTransparency = NewTransparency
+	end
 end
 
-MusicPulsePart.Initialize = function(Instance: Instance)
+PulseModule.Initialize = function(Instance: Instance)
     table.insert(PulseObjects, Instance)
 end
 
-return MusicPulsePart
+return PulseModule
