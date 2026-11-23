@@ -9,6 +9,7 @@ local FallingPartModule = require(script.Parent:WaitForChild("ClientObjects"):Wa
 local BasicLauncherModule = require(script.Parent:WaitForChild("ClientObjects"):WaitForChild("BasicLauncherModule"))
 local TeleporterModule = require(script.Parent:WaitForChild("ClientObjects"):WaitForChild("TeleporterModule"))
 local CustomBackgroundModule = require(script.Parent:WaitForChild("ClientObjects"):WaitForChild("CustomBackgroundModule"))
+local AudioVisualizerModule = require(script.Parent:WaitForChild("ClientObjects"):WaitForChild("AudioVisualizerModule"))
 
 
 -- custom touch event
@@ -31,7 +32,8 @@ local TouchActions = {
     ["FallingPart"] = function(Part) FallingPartModule.Fall(Part) end,
     ["CustomBackgroundGiver"] = function(Part) CustomBackgroundModule.BackgroundGiverTouched(Part) end,
     ["CustomBackgroundRemover"] = function(Part) CustomBackgroundModule.BackgroundRemoverTouched(Part) end,
-    ["CustomBackgroundPropertyChanger"] = function(Part) CustomBackgroundModule.BackgroundPropertyChangerTouched(Part) end
+    ["CustomBackgroundPropertyChanger"] = function(Part) CustomBackgroundModule.BackgroundPropertyChangerTouched(Part) end,
+    ["AudioVisualizerBegin"] = function(Part) AudioVisualizerModule.Begin(Part) end
 }
 
 local TouchEndedActions = {
