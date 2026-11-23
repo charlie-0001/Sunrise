@@ -26,7 +26,7 @@ function Process.new(Interval: number, Run: (DeltaTime: number?) -> (), Type: st
 end
 
 -- useful functions for processes
-Process.InsertProcess = function(Proc: Process)
+function Process.InsertProcess(Proc: Process)
     if Proc.Type == "Heartbeat" then
         table.insert(Process.HeartbeatProcesses, Proc)
     elseif Proc.Type == "RenderStepped" then
@@ -34,7 +34,7 @@ Process.InsertProcess = function(Proc: Process)
     end
 end
 
-Process.RemoveProcess = function(Proc: Process)
+function Process.RemoveProcess(Proc: Process)
     if Proc.Type == "Heartbeat" then
         local index = table.find(Process.HeartbeatProcesses, Proc)
         if index then
@@ -45,6 +45,14 @@ Process.RemoveProcess = function(Proc: Process)
         if index then
             table.remove(Process.RenderSteppedProcesses, index)
         end
+    end
+end
+
+function Process.HasProcess(Proc: Process)
+    if table.find(Process.RenderSteppedProcesses, Proc) or table.find(Process.HeartbeatProcesses, Proc) then
+        return true 
+    else
+        return false
     end
 end
 
