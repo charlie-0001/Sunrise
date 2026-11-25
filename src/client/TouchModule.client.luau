@@ -33,7 +33,8 @@ local TouchActions = {
     ["CustomBackgroundGiver"] = function(Part) CustomBackgroundModule.BackgroundGiverTouched(Part) end,
     ["CustomBackgroundRemover"] = function(Part) CustomBackgroundModule.BackgroundRemoverTouched(Part) end,
     ["CustomBackgroundPropertyChanger"] = function(Part) CustomBackgroundModule.BackgroundPropertyChangerTouched(Part) end,
-    ["AudioVisualizerBegin"] = function(Part) AudioVisualizerModule.Begin(Part) end
+    ["AudioVisualizerBegin"] = function(Part) AudioVisualizerModule.Begin(Part) end,
+    ["AudioVisualizerEnd"] = function(Part) AudioVisualizerModule.End(Part) end
 }
 
 local TouchEndedActions = {
