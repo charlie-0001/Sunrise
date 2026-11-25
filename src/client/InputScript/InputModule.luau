@@ -4,30 +4,37 @@ InputModule.Interval = 0
 InputModule.Type = "Heartbeat"
 
 InputModule.HeldInputs = {}
-InputModule.PreviousHeldInputs = {}
+InputModule.PressedThisFrame = {}
+InputModule.ReadyToClear = {}
 
-function InputModule.IsHoldingAny(InputList: {})
+function InputModule.IsHoldingAny(InputList: {any})
     for _, Input in ipairs(InputList) do
         if InputModule.HeldInputs[Input] then
             return true
         end
     end
+
     return false
 end
 
-function InputModule.Pressed(InputList: {})
+function InputModule.Pressed(InputList: {any})
     for _, Input in ipairs(InputList) do
-        local IsHeldNow = InputModule.HeldInputs[Input]
-        local WasHeldLastFrame = InputModule.PreviousHeldInputs[Input]
+		if InputModule.PressedThisFrame[Input] then
+			InputModule.PressedThisFrame[Input] = false
+			return true
+		end
+	end
 
-        if IsHeldNow and not WasHeldLastFrame then
-            return true
-        end
-    end
-    return false
+	return false
 end 
 
 function InputModule.AddInput(Input)
+    if not InputModule.HeldInputs[Input] then
+		InputModule.PressedThisFrame[Input] = true
+	else 
+        InputModule.PressedThisFrame[Input] = false
+    end
+
     InputModule.HeldInputs[Input] = true
 end
 
@@ -36,10 +43,16 @@ function InputModule.RemoveInput(Input)
 end
 
 function InputModule.Run(DeltaTime)
-    table.clear(InputModule.PreviousHeldInputs)
-    for Key, Value in pairs(InputModule.HeldInputs) do
-        InputModule.PreviousHeldInputs[Key] = Value
-    end
+    for Input in pairs(InputModule.PressedThisFrame) do
+		if InputModule.ReadyToClear[Input] then
+			InputModule.PressedThisFrame[Input] = nil
+			InputModule.ReadyToClear[Input] = nil
+		else
+			--[[ Your pressed input gets to survive 1 frame before triggering so unless you're running at 1 fps 
+            or you're a Geomtry Dash player I don't think this will matter ]]
+			InputModule.ReadyToClear[Input] = true
+		end
+	end
 end
 
 return InputModule
