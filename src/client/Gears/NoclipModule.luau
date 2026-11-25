@@ -40,8 +40,7 @@ function NoclipModule.Run(DeltaTime: number)
     if InputModule.IsHoldingAny(NoclipModule.Right) then MoveVector += Vector3.new(1, 0, 0); Count += 1 end
 	if InputModule.IsHoldingAny(NoclipModule.Up) then MoveVector += Vector3.new(0, 1, 0) end
 
-    if InputModule.Pressed(NoclipModule.SpeedUp) then NoclipModule.Speed += 5 end
-    if InputModule.Pressed(NoclipModule.SpeedDown) then NoclipModule.Speed -= 5 end
+    if InputModule.Pressed(NoclipModule.SpeedDown) then NoclipModule.Speed -= 10 end
     if NoclipModule.Speed < 0 then NoclipModule.Speed = 5 end
 
     MoveVector = MoveVector * NoclipModule.Speed * DeltaTime
@@ -57,9 +56,12 @@ local NoclipProcess = ProcessModule.new(NoclipModule.Interval, NoclipModule.Run,
 
 function NoclipModule.RunEquippingLogic(Tool: Tool)
     Tool.Equipped:Connect(function() -- equipped and unequipped might cause a memory leak in the future because these are "automatically" cleaned up but that might not be the case
+        if not HumanoidStateModule.HumanoidRootPart then return end
+
         HumanoidStateModule.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
         HumanoidStateModule.Inert = true
         HumanoidStateModule.HumanoidRootPart.Anchored = true
+        
         for _, Part: BasePart in HumanoidStateModule.Character:GetChildren() do
             if Part:IsA("BasePart") then
                 Part.CollisionGroup = "CollideWithNothing"
