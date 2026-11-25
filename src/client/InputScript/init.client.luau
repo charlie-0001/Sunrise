@@ -17,6 +17,7 @@ local function OnInputBegan(Input, GameProcessed)
         InputModule.AddInput(Input.KeyCode)
 
         -- alignment keys
+        if GameProcessed then return end
         if Input.KeyCode == Enum.KeyCode.Comma then
             Camera.CFrame = CFrame.Angles(0, math.rad(45), 0) * Camera.CFrame
         elseif Input.KeyCode == Enum.KeyCode.Period then
@@ -36,6 +37,8 @@ local function OnInputEnded(Input, GameProcessed)
     if InputType == Enum.UserInputType.Keyboard then
         InputModule.RemoveInput(Input.KeyCode)
     elseif InputType == Enum.UserInputType.MouseButton1 then
+        InputModule.RemoveInput(InputType)
+    elseif InputType == Enum.UserInputType.Touch then
         InputModule.RemoveInput(InputType)
     end
 end
