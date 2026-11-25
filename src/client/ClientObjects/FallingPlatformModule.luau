@@ -28,11 +28,11 @@ function FallingPlatformModule.Fall(Part: BasePart)
     -- pulse
     local Pulse = Model:GetAttribute("Pulse")
     if Pulse then
-        local PulseTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local PulseTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
         local OriginalColor = Part.Color
         local h, s, v = OriginalColor:ToHSV()
-        local PulseColor = Color3.fromHSV(h, math.min(0, s - 0.1), v)
+        local PulseColor = Color3.fromHSV(h, math.max(0, s - 0.5), v)
 
         local PulseTween = TweenService:Create(Part, PulseTweenInfo, {Color = OriginalColor})
 
