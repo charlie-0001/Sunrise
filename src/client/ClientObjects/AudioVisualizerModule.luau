@@ -1,5 +1,7 @@
+-- THIS IS THE MESSIEST CODE OF ALL TIME IM SO SORRY
+
+
 -- import services
-local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local StarterGUI = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
@@ -17,12 +19,14 @@ local PlayerGui = LocalPlayer and LocalPlayer:WaitForChild("PlayerGui")
 local rng = Random.new()
 local BarSizes: { [Frame]: number } = {}
 local BarSeeds: { [Frame]: { Scale: number, Phase: number, Speed: number, nextRollAt: number } } = {}
+local ActiveTweens: {Tween} = {}
+local IsTweening = false
 
 local SMOOTH_SPEED = 50 -- high = snappier
 local REROLL_MIN = 2.0 -- minimum seconds between bar re-rolls
 local REROLL_MAX = 4.5 -- maximum seconds between bar re-rolls
 local MIN_BAR_HEIGHT = 0.35
-local MAX_BAR_HEIGHT = 4
+local MAX_BAR_HEIGHT = 5.5
 local BASE_WIDTH = 0.025
 
 local function GetVisualizerGUI()
@@ -63,45 +67,72 @@ local function GetBarSeed(Frame: Frame, Now: number)
 	return Seed
 end
 
+local function Tween(Bar: Frame, Activate: boolean)
+	local Info = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
+	local Goal = Activate and { BackgroundTransparency = 0.75 } or { BackgroundTransparency = 1 }
+	local NewTween = TweenService:Create(Bar, Info, Goal)
+
+	table.insert(ActiveTweens, NewTween)
+	NewTween.Completed:Once(function()
+		local Index = table.find(ActiveTweens, NewTween)
+		if Index then
+			table.remove(ActiveTweens, Index)
+		end
+	end)
+
+	NewTween:Play()
+end
+
 local function BarActivate(Part: BasePart, Mode: boolean)
-    local GUI: ScreenGui = GetVisualizerGUI()
+	local GUI: ScreenGui = GetVisualizerGUI()
 	if not GUI then
 		print("Error finding audio visualizer GUI!")
 		return
 	end
 
-    local Container = GUI:FindFirstChild("Container")
-    if not Container then return end
+	local Container = GUI:FindFirstChild("Container")
+	if not Container then return end
 
-    local Info = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
-    local Color = Part:GetAttribute("Color") :: Color3 or Color3.new(255, 255, 255)
+	local Color = Part:GetAttribute("Color") :: Color3 or Color3.new(1, 1, 1)
 
-    if Mode == true then
-        GUI.Enabled = true
-        for _, Frame: Frame in pairs(Container:GetChildren()) do
-            if Frame:IsA("Frame") then
-                Frame.BackgroundTransparency = 1
+	for _, ActiveTween in ipairs(ActiveTweens) do
+		ActiveTween:Cancel()
+	end
+	table.clear(ActiveTweens)
 
-                Frame.BackgroundColor3 = Color
-                -- TweenService:Create(Frame, Info, {BackgroundTransparency = 0.75}):Play()
-            end
-        end
+	if Mode == true then
+		IsTweening = true
+		GUI.Enabled = true
 
-        ProcessModule.InsertProcess(AudioVisualizerModule.AudioVisualizerProcess)
+		for _, Frame in ipairs(Container:GetChildren()) do -- activate the bars
+			if Frame:IsA("Frame") then
+				Frame.BackgroundTransparency = 1
+				Frame.BackgroundColor3 = Color
+				Tween(Frame, true)
+			end
+		end
 
-    elseif Mode == false then
-        for _, Frame: Frame in pairs(Container:GetChildren()) do
-            if Frame:IsA("Frame") then
-                -- TweenService:Create(Frame, Info, {BackgroundTransparency = 1}):Play()
-            end
-        end
+		task.wait(1)
+		IsTweening = false
+		ProcessModule.InsertProcess(AudioVisualizerModule.AudioVisualizerProcess)
 
-        ProcessModule.RemoveProcess(AudioVisualizerModule.AudioVisualizerProcess)
-        GUI.Enabled = false
-    else
-        print("Failed to tween in/out the audiovisualizer bar GUI!")
+	elseif Mode == false then
+		IsTweening = true
+		ProcessModule.RemoveProcess(AudioVisualizerModule.AudioVisualizerProcess)
 
-    end
+		for _, Frame in ipairs(Container:GetChildren()) do -- deactivate the bars
+			if Frame:IsA("Frame") then
+				Tween(Frame, false)
+			end
+		end
+
+		task.wait(1)
+		GUI.Enabled = false
+		IsTweening = false
+
+	else
+		print("Failed to tween in/out the audiovisualizer bar GUI!")
+	end
 end
 
 
@@ -150,12 +181,12 @@ AudioVisualizerModule.AudioVisualizerProcess = ProcessModule.new(
 )
 
 function AudioVisualizerModule.Begin(Part: BasePart)
-	if ProcessModule.HasProcess(AudioVisualizerModule.AudioVisualizerProcess) then return end
+	if ProcessModule.HasProcess(AudioVisualizerModule.AudioVisualizerProcess) or IsTweening then return end
     BarActivate(Part, true)
 end
 
 function AudioVisualizerModule.End(Part: BasePart)
-    if not ProcessModule.HasProcess(AudioVisualizerModule.AudioVisualizerProcess) then return end
+    if not ProcessModule.HasProcess(AudioVisualizerModule.AudioVisualizerProcess) or IsTweening then return end
 	BarActivate(Part, false)
 end
 
