@@ -18,7 +18,7 @@ PulseModule = {}
 PulseModule.Interval = 0.05
 PulseModule.Type = "RenderStepped"
 
-PulseModule.MaxLoudness = 600
+PulseModule.MaxLoudness = 450
 PulseModule.CurrentTransparency = 0
 
 PulseModule.Run = function(DeltaTime: number)
